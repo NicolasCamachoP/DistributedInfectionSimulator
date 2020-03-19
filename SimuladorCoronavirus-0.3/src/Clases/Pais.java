@@ -1,27 +1,89 @@
 package Clases;
 
+import static Clases.Broker.nameFile;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * @version 1.0
  * @created 07-mar.-2020 9:30:50
  */
-public class Pais implements Serializable {
+public class Pais extends Thread {
 
     private String nomPais;
     private long poblacion;
-    private float PorcentAislamiento;
-    private float PorcentajePoblaInfec;
-    private float PorcentPoblaVulne;
-    private List<Pais> VecinosAereos;
-    private List<Pais> VecinosTerrestres;
+    private float porcentAislamiento;
+    private float porcentajePoblaInfec;
+    private float porcentPoblaVulne;
+    private List<String> vecinosAereos;
+    private List<String> vecinosTerrestres;
 
-    public Pais(String nombre, long poblacion) {
-        this.nomPais = nombre;
-        this.poblacion = poblacion;
+    public static void main(String[] args) throws IOException {
+        String nFile = new String();
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Ingrese el nombre del archivo para inicializar el país junto con la extension");
+        nFile = scan.nextLine();
+        System.out.println("Nombre " + nFile);
+        Pais me = new Pais(nFile);
+        
+
+    }
+    public Pais(String nFile) {
+        vecinosAereos = new ArrayList();
+        vecinosTerrestres = new ArrayList();
+        leerArchivo(nFile);
+        System.out.println("Vecinos terrestres: "+vecinosTerrestres.size());
+        System.out.println("Vecinos aereos: "+vecinosAereos.size());
+        crearHiloEscucha();
+        this.start();
+    }
+    
+     public void run() 
+    {
+        iniciarAgentReg();
     }
 
+    private void leerArchivo(String nFile) {
+        try {
+            Scanner input = new Scanner(new File(nFile));
+            while (input.hasNextLine()) {
+                String line = input.nextLine();
+                if (line.equals("nombre:")) {
+                    nomPais = input.nextLine();
+                } else if (line.equals("poblacion:")) {
+                    poblacion = input.nextLong();
+                } else if (line.equals("porcentajeaislamiento:")) {
+                    porcentAislamiento = input.nextFloat();
+                }else if (line.equals("porcentajepoblacioninfectada:")) {
+                    porcentajePoblaInfec = input.nextFloat();
+                }else if (line.equals("porcentajepoblacionvulnerable:")) {
+                    porcentPoblaVulne = input.nextFloat();
+                } 
+                else if (line.equals("vecinosaereo:")) {
+                    line = input.nextLine();
+                    while (!line.equals("vecinosterrestres:")) {
+                        //System.out.println(line);
+                        vecinosAereos.add(line);
+                        line = input.nextLine();
+                    }
+                    while (input.hasNextLine()) {
+                        line = input.nextLine();
+                        //System.out.println(line);
+                        vecinosTerrestres.add(line);
+                    }
+                }  
+            }
+            input.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    
     public String getNomPais() {
         return nomPais;
     }
@@ -39,43 +101,43 @@ public class Pais implements Serializable {
     }
 
     public float getPorcentAislamiento() {
-        return PorcentAislamiento;
+        return porcentAislamiento;
     }
 
     public void setPorcentAislamiento(float PorcentAislamiento) {
-        this.PorcentAislamiento = PorcentAislamiento;
+        this.porcentAislamiento = PorcentAislamiento;
     }
 
     public float getPorcentajePoblaInfec() {
-        return PorcentajePoblaInfec;
+        return porcentajePoblaInfec;
     }
 
     public void setPorcentajePoblaInfec(float PorcentajePoblaInfec) {
-        this.PorcentajePoblaInfec = PorcentajePoblaInfec;
+        this.porcentajePoblaInfec = PorcentajePoblaInfec;
     }
 
     public float getPorcentPoblaVulne() {
-        return PorcentPoblaVulne;
+        return porcentPoblaVulne;
     }
 
     public void setPorcentPoblaVulne(float PorcentPoblaVulne) {
-        this.PorcentPoblaVulne = PorcentPoblaVulne;
+        this.porcentPoblaVulne = PorcentPoblaVulne;
     }
 
-    public List<Pais> getVecinosAereos() {
-        return VecinosAereos;
+    public List<String> getVecinosAereos() {
+        return vecinosAereos;
     }
 
-    public void setVecinosAereos(List<Pais> VecinosAereos) {
-        this.VecinosAereos = VecinosAereos;
+    public void setVecinosAereos(List<String> VecinosAereos) {
+        this.vecinosAereos = VecinosAereos;
     }
 
-    public List<Pais> getVecinosTerrestres() {
-        return VecinosTerrestres;
+    public List<String> getVecinosTerrestres() {
+        return vecinosTerrestres;
     }
 
-    public void setVecinosTerrestres(List<Pais> VecinosTerrestres) {
-        this.VecinosTerrestres = VecinosTerrestres;
+    public void setVecinosTerrestres(List<String> VecinosTerrestres) {
+        this.vecinosTerrestres = VecinosTerrestres;
     }
 
     public void finalize() throws Throwable {
@@ -93,5 +155,13 @@ public class Pais implements Serializable {
             c += c * b;
         }
 
+    }
+
+    private void crearHiloEscucha() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private void iniciarAgentReg() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }//end Pais

@@ -23,7 +23,7 @@ public class Servidor
         Servidor s = new Servidor();   
     }
     
-    private HashMap<ConnectionS, String > conexiones;
+    private HashMap<ConnectionP, String > conexiones;
     
     public Servidor()
     {
@@ -39,7 +39,7 @@ public class Servidor
 	   while(true) 
            {
                 Socket clientSocket = listenSocket.accept();
-                ConnectionS c = new ConnectionS(clientSocket, this);
+                ConnectionP c = new ConnectionP(clientSocket, this);
                 conexiones.put(c, clientSocket.getInetAddress().getHostAddress());
 	   }
 	} 

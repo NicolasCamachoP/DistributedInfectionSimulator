@@ -1,0 +1,14 @@
+nombre:
+Chile
+poblacion:
+8000000
+porcentajeaislamiento:
+10
+porcentajepoblacioninfectada:
+1
+porcentajepoblacionvulnerable:
+50
+vecinosaereo:
+Colombia
+vecinosterrestres:
+Venezuela

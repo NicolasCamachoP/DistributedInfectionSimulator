@@ -11,5 +11,5 @@ package Clases;
  */
 public enum Tipo
 {
-    OkRequest, OkReply, BalanceRequest, BalanceReply, BalanceLoad
+    OkRequest, OkReply, BalanceRequest, BalanceReply, BalanceLoad, agentRegistry, agentRConfirm
 }

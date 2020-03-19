@@ -15,14 +15,14 @@ import java.net.Socket;
  *
  * @author sistemas
  */
-public class ConnectionS extends Thread
+public class ConnectionP extends Thread
 {
     DataInputStream in;
     DataOutputStream out;
     Socket clientSocket;
     Servidor servidor;
 
-    public ConnectionS(Socket aClientSocket, Servidor s) 
+    public ConnectionP(Socket aClientSocket, Servidor s) 
     {
         try 
         {

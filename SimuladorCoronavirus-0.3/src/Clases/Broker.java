@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +24,7 @@ public class Broker extends Thread {
     
     public static final String nameFile = "brokerFile.txt";
     public ArrayList<String> vecinosBrokers;
-    public ArrayList<Pais> paises;
+    public HashMap <String, String> paises;
     public int puertoBrokers;
     public int puertoPaises;
     public long maximaCarga;
@@ -41,7 +42,7 @@ public class Broker extends Thread {
         vecinosBrokers = new ArrayList<>();
         paisesConectados = 0;
         leerArchivo();
-        paises = new ArrayList<>();
+        paises = new HashMap<>();
         crearHiloEscucha();
         this.start();
     }
@@ -163,13 +164,8 @@ public class Broker extends Thread {
     }
 
     private boolean addPais(Pais pais) {
-        if ((this.cargaActual + pais.getPoblacion())<= this.maximaCarga) {
-            this.cargaActual += pais.getPoblacion();
-            this.paises.add(pais);
-            return true;
-        } else {
-             return this.balanceoCarga(pais);
-        }
+        //TODO
+        return false;
 
     }
     
