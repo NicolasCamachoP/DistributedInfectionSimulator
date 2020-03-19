@@ -60,6 +60,10 @@ class ConnectionB extends Thread {
             {
                 //TO DO
             }
+            else if(m.tipo == Tipo.agentRegistry){
+                m = new Mensaje(Tipo.agentRConfirm, "localhost");
+                out.writeObject(out);
+            }
             
         } 
         catch (EOFException e) 
@@ -78,6 +82,7 @@ class ConnectionB extends Thread {
         {
             try 
             {
+                System.out.println("Hola");
                 clientSocket.close();
             } 
             catch (IOException e) 

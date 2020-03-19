@@ -39,8 +39,8 @@ public class Servidor
 	   while(true) 
            {
                 Socket clientSocket = listenSocket.accept();
-                ConnectionP c = new ConnectionP(clientSocket, this);
-                conexiones.put(c, clientSocket.getInetAddress().getHostAddress());
+              //  ConnectionP c = new ConnectionP(clientSocket, this);
+                //conexiones.put(c, clientSocket.getInetAddress().getHostAddress());
 	   }
 	} 
         catch(IOException e) 

@@ -1,5 +1,7 @@
 nombre:
 Chile
+ipbroker:
+192.168.0.3
 poblacion:
 8000000
 porcentajeaislamiento:
@@ -8,6 +10,8 @@ porcentajepoblacioninfectada:
 1
 porcentajepoblacionvulnerable:
 50
+puertopais:
+7989
 vecinosaereo:
 Colombia
 vecinosterrestres:

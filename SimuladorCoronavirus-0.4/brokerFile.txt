@@ -3,7 +3,7 @@ maximaCarga:
 puertoS:
 5498
 puertoP:
-5499
+7989
 vecinosB:
 192.168.0.14
 paises:

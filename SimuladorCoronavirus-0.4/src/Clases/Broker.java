@@ -60,8 +60,35 @@ public class Broker extends Thread {
     public void run() 
     {
         iniciarOK();
+        iniciarPReg();
     }
-    
+    private void iniciarPReg() {
+        Broker b = this;
+        Thread hiloEscucha = new Thread(new Runnable() {
+            @Override
+            public void run() 
+            {
+                try 
+                {   
+                    serverS = new ServerSocket(puertoPaises);
+                    System.out.println("Broker Escuchando");
+                    
+                    while(true)
+                    {
+                        Socket clientSocket = serverS.accept();
+                        ConnectionB c = new ConnectionB(clientSocket, b);
+                    }
+ 
+                } 
+                catch (IOException ex) 
+                {
+                    Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
+
+                }
+            }
+        });
+        hiloEscucha.start();
+    }
     private void iniciarOK() 
     {
         boolean  bandera = false;
@@ -174,6 +201,8 @@ public class Broker extends Thread {
     private boolean balanceoCarga(Pais pais) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    
 
     
 }//end Broker

@@ -3,10 +3,16 @@ package Clases;
 import static Clases.Broker.nameFile;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @version 1.0
@@ -21,6 +27,11 @@ public class Pais extends Thread {
     private float porcentPoblaVulne;
     private List<String> vecinosAereos;
     private List<String> vecinosTerrestres;
+    private int puertoPaises;
+    private ServerSocket serverS;
+    private String ipBroker;
+    public ObjectOutputStream out;
+    public ObjectInputStream in;
 
     public static void main(String[] args) throws IOException {
         String nFile = new String();
@@ -29,21 +40,64 @@ public class Pais extends Thread {
         nFile = scan.nextLine();
         System.out.println("Nombre " + nFile);
         Pais me = new Pais(nFile);
-        
 
     }
+
     public Pais(String nFile) {
         vecinosAereos = new ArrayList();
         vecinosTerrestres = new ArrayList();
         leerArchivo(nFile);
-        System.out.println("Vecinos terrestres: "+vecinosTerrestres.size());
-        System.out.println("Vecinos aereos: "+vecinosAereos.size());
+        System.out.println("Vecinos terrestres: " + vecinosTerrestres.size());
+        System.out.println("Vecinos aereos: " + vecinosAereos.size());
         crearHiloEscucha();
         this.start();
     }
-    
-     public void run() 
-    {
+
+    private void crearHiloEscucha() {
+        Pais p = this;
+        Thread hiloEscucha = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverS = new ServerSocket(puertoPaises);
+                    System.out.println("Pais escuchando");
+
+                    while (true) {
+                        Socket clientSocket = serverS.accept();
+                        ConnectionP c = new ConnectionP(clientSocket, p);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        hiloEscucha.start();
+    }
+
+    private void iniciarAgentReg() {
+        boolean bandera = false;
+        while (bandera == false) {
+            try {
+                Socket s = new Socket(ipBroker, puertoPaises);
+                out = new ObjectOutputStream(s.getOutputStream());
+                out.writeObject(new Mensaje(Tipo.agentRegistry, null));
+                in = new ObjectInputStream(s.getInputStream());
+                Mensaje m = (Mensaje) in.readObject();
+                if (m.tipo == Tipo.agentRConfirm) {
+                    bandera = true;
+                    System.out.println("Broker con IP: " + ipBroker + "Hizo agentConfirm");
+                }
+
+            } catch (IOException e) {
+                System.out.println("Ip: " + ipBroker + " - Esperando ...");
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+
+    public void run() {
         iniciarAgentReg();
     }
 
@@ -54,16 +108,19 @@ public class Pais extends Thread {
                 String line = input.nextLine();
                 if (line.equals("nombre:")) {
                     nomPais = input.nextLine();
+                } else if (line.equals("ipbroker:")) {
+                    ipBroker = input.nextLine();
                 } else if (line.equals("poblacion:")) {
                     poblacion = input.nextLong();
                 } else if (line.equals("porcentajeaislamiento:")) {
                     porcentAislamiento = input.nextFloat();
-                }else if (line.equals("porcentajepoblacioninfectada:")) {
+                } else if (line.equals("porcentajepoblacioninfectada:")) {
                     porcentajePoblaInfec = input.nextFloat();
-                }else if (line.equals("porcentajepoblacionvulnerable:")) {
+                } else if (line.equals("porcentajepoblacionvulnerable:")) {
                     porcentPoblaVulne = input.nextFloat();
-                } 
-                else if (line.equals("vecinosaereo:")) {
+                } else if (line.equals("puertopaises:")) {
+                    puertoPaises = input.nextInt();
+                } else if (line.equals("vecinosaereo:")) {
                     line = input.nextLine();
                     while (!line.equals("vecinosterrestres:")) {
                         //System.out.println(line);
@@ -75,7 +132,7 @@ public class Pais extends Thread {
                         //System.out.println(line);
                         vecinosTerrestres.add(line);
                     }
-                }  
+                }
             }
             input.close();
         } catch (Exception ex) {
@@ -83,7 +140,6 @@ public class Pais extends Thread {
         }
     }
 
-    
     public String getNomPais() {
         return nomPais;
     }
@@ -157,11 +213,4 @@ public class Pais extends Thread {
 
     }
 
-    private void crearHiloEscucha() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void iniciarAgentReg() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }//end Pais

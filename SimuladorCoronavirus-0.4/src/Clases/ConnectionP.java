@@ -5,31 +5,34 @@
  */
 package Clases;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import static java.lang.Thread.sleep;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author sistemas
+ * @author aulasingenieria
  */
-public class ConnectionP extends Thread
-{
-    DataInputStream in;
-    DataOutputStream out;
-    Socket clientSocket;
-    Servidor servidor;
+class ConnectionP extends Thread {
 
-    public ConnectionP(Socket aClientSocket, Servidor s) 
+    ObjectInputStream in;
+    ObjectOutputStream out;
+    Socket clientSocket;
+    Pais pais;
+
+    public ConnectionP(Socket aClientSocket, Pais p) 
     {
         try 
         {
-            servidor = s;
+            pais = p;
             clientSocket = aClientSocket;
-            in = new DataInputStream(clientSocket.getInputStream());
-            out = new DataOutputStream(clientSocket.getOutputStream());
+            in = new ObjectInputStream(clientSocket.getInputStream());
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
             this.start();
         } 
         catch (IOException e) 
@@ -41,50 +44,13 @@ public class ConnectionP extends Thread
     public void run() 
     {
         try 
-        {	                                    
-            out.writeUTF("hola");
-            /*String tipo = in.readUTF();
-            
-            if(tipo.equals("FuenteInfo"))
+        {	       
+            Mensaje m = (Mensaje) in.readObject();
+            sleep(100);
+            if(m.tipo == Tipo.agentRConfirm)
             {
-                System.out.println("Registrado: Fuente de Información");
-                String m = in.readUTF();
-                String[] split = m.split("-");
-                broker.mensaje = "1-" + split[1];
-                System.out.println("Recivido de Fuente de Información: " + broker.mensaje);
-                broker.hayMensaje = true;
-                
-                while(true)
-                {
-                    System.out.print("");
-                    if(broker.ack == broker.clientes)
-                    {
-                        System.out.println("Enviando ack a Fuente de Información");
-                        out.writeUTF("3-ACK");
-                        System.out.println("Ack enviado");
-                        break;
-                    }
-                }
+                System.out.println("Pais registrado en broker con ip: " + m.getClass());
             }
-            else if(tipo.equals("Cliente"))
-            {
-                broker.clientes ++;
-                System.out.println("Registrado: Cliente " + (broker.clientes));
-                
-                while(true)
-                {
-                    System.out.print("");
-                    if(broker.hayMensaje)
-                    {
-                        out.writeUTF(broker.mensaje);
-                        System.out.println("Mensaje enviado, esperando respuesta...");
-                        System.out.println("Respuesta recivida: " + in.readUTF());
-                        broker.ack++;
-                        break;
-                    }
-                }  
-            } */
-            
         } 
         catch (EOFException e) 
         {
@@ -93,6 +59,10 @@ public class ConnectionP extends Thread
         catch (IOException e) 
         {
             System.out.println("readline:" + e.getMessage());
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ConnectionB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ConnectionB.class.getName()).log(Level.SEVERE, null, ex);
         }
         finally 
         {
@@ -107,4 +77,5 @@ public class ConnectionP extends Thread
         }
     } // end run
 
-}
+} // end class Connection 
+
