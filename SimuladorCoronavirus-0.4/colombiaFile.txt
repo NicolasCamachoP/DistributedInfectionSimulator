@@ -1,0 +1,14 @@
+nombre:
+Colombia
+poblacion:
+4000000
+porcentajeaislamiento:
+10
+porcentajepoblacioninfectada:
+1
+porcentajepoblacionvulnerable:
+50
+vecinosaereo:
+Chile
+vecinosterrestres:
+Venezuela

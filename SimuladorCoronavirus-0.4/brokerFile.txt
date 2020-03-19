@@ -1,0 +1,10 @@
+maximaCarga:
+2000000000
+puertoS:
+5498
+puertoP:
+5499
+vecinosB:
+192.168.0.14
+paises:
+3
