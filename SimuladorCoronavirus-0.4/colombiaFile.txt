@@ -1,7 +1,5 @@
 nombre:
 Colombia
-ipbroker:
-192.168.0.3
 poblacion:
 4000000
 porcentajeaislamiento:
@@ -10,8 +8,10 @@ porcentajepoblacioninfectada:
 1
 porcentajepoblacionvulnerable:
 50
-puertopais:
+puertopaisBroker:
 7989
+puertopaises:
+6798
 vecinosaereo:
 Chile
 vecinosterrestres:

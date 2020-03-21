@@ -27,9 +27,10 @@ public class Pais extends Thread {
     private float porcentPoblaVulne;
     private List<String> vecinosAereos;
     private List<String> vecinosTerrestres;
+    private int puertoPais_Broker;
     private int puertoPaises;
     private ServerSocket serverS;
-    private String ipBroker;
+    private String ipBroker = "localhost";  
     public ObjectOutputStream out;
     public ObjectInputStream in;
 
@@ -49,7 +50,7 @@ public class Pais extends Thread {
         leerArchivo(nFile);
         System.out.println("Vecinos terrestres: " + vecinosTerrestres.size());
         System.out.println("Vecinos aereos: " + vecinosAereos.size());
-        crearHiloEscucha();
+//        crearHiloEscucha();
         this.start();
     }
 
@@ -60,7 +61,7 @@ public class Pais extends Thread {
             public void run() {
                 try {
                     serverS = new ServerSocket(puertoPaises);
-                    System.out.println("Pais escuchando");
+                    System.out.println("Pais escuchando a los demas paises ...");
 
                     while (true) {
                         Socket clientSocket = serverS.accept();
@@ -78,14 +79,14 @@ public class Pais extends Thread {
         boolean bandera = false;
         while (bandera == false) {
             try {
-                Socket s = new Socket(ipBroker, puertoPaises);
+                Socket s = new Socket(ipBroker, puertoPais_Broker);
                 out = new ObjectOutputStream(s.getOutputStream());
                 out.writeObject(new Mensaje(Tipo.agentRegistry, null));
                 in = new ObjectInputStream(s.getInputStream());
                 Mensaje m = (Mensaje) in.readObject();
                 if (m.tipo == Tipo.agentRConfirm) {
                     bandera = true;
-                    System.out.println("Broker con IP: " + ipBroker + "Hizo agentConfirm");
+                    System.out.println("Broker con IP: " + ipBroker + " Hizo agentConfirm");
                 }
 
             } catch (IOException e) {
@@ -108,8 +109,6 @@ public class Pais extends Thread {
                 String line = input.nextLine();
                 if (line.equals("nombre:")) {
                     nomPais = input.nextLine();
-                } else if (line.equals("ipbroker:")) {
-                    ipBroker = input.nextLine();
                 } else if (line.equals("poblacion:")) {
                     poblacion = input.nextLong();
                 } else if (line.equals("porcentajeaislamiento:")) {
@@ -118,6 +117,8 @@ public class Pais extends Thread {
                     porcentajePoblaInfec = input.nextFloat();
                 } else if (line.equals("porcentajepoblacionvulnerable:")) {
                     porcentPoblaVulne = input.nextFloat();
+                } else if (line.equals("puertopaisBroker:")) {
+                    puertoPais_Broker = input.nextInt();
                 } else if (line.equals("puertopaises:")) {
                     puertoPaises = input.nextInt();
                 } else if (line.equals("vecinosaereo:")) {

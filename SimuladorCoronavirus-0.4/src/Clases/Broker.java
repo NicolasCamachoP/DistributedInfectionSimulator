@@ -42,8 +42,11 @@ public class Broker extends Thread {
         vecinosBrokers = new ArrayList<>();
         paisesConectados = 0;
         leerArchivo();
+        System.out.println("Puerto Brokers: " + this.puertoBrokers);
+        System.out.println("Puerto Paises: " + this.puertoPaises);
         paises = new HashMap<>();
         crearHiloEscucha();
+        iniciarPReg();
         this.start();
     }
     
@@ -60,10 +63,8 @@ public class Broker extends Thread {
     public void run() 
     {
         iniciarOK();
-        iniciarPReg();
     }
     private void iniciarPReg() {
-        Broker b = this;
         Thread hiloEscucha = new Thread(new Runnable() {
             @Override
             public void run() 
@@ -71,12 +72,13 @@ public class Broker extends Thread {
                 try 
                 {   
                     serverS = new ServerSocket(puertoPaises);
-                    System.out.println("Broker Escuchando");
+                    System.out.println("Broker Escuchando Paises ...");
                     
                     while(true)
                     {
                         Socket clientSocket = serverS.accept();
-                        ConnectionB c = new ConnectionB(clientSocket, b);
+                        System.out.println("Solicitud recibida");
+                        ConnectionP_B c = new ConnectionP_B(clientSocket);
                     }
  
                 } 
@@ -142,6 +144,7 @@ public class Broker extends Thread {
                     while(true)
                     {
                         Socket clientSocket = serverS.accept();
+                        System.out.println("Solicitud recibida");
                         ConnectionB c = new ConnectionB(clientSocket, b);
                     }
  
@@ -163,7 +166,7 @@ public class Broker extends Thread {
                 String line = input.nextLine();
                 if (line.equals("maximaCarga:")) {
                     maximaCarga = input.nextLong();
-                }else if (line.equals("puertoS:")) {
+                }else if (line.equals("puertoB:")) {
                     puertoBrokers = input.nextInt();
                 } else if (line.equals("puertoP:")) {
                     puertoPaises = input.nextInt();
@@ -177,11 +180,12 @@ public class Broker extends Thread {
                          vecinosBrokers.add(line);
                          line = input.nextLine();
                     }
-                }
-                else if(line.equals("paises:"))
-                {
-                    line = input.nextLine();
-                    paisesIniciales = Integer.parseInt(line);
+                    if(line.equals("paises:"))
+                    {
+                        line = input.nextLine();
+                        paisesIniciales = Integer.parseInt(line);
+                    }
+                    
                 }
             }
             input.close();
