@@ -85,7 +85,7 @@ public class Broker extends Thread {
             @Override
             public void run() {
                 try {
-                    serverSP = new ServerSocket(6666);//puertoPaises);
+                    serverSP = new ServerSocket(puertoPaises);
                     System.out.println("Broker Escuchando Paises ...");
                     int numPaises = 0;
                     while (numPaises < paisesNecesarios) {
