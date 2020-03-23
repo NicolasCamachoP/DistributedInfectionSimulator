@@ -62,8 +62,10 @@ public class Broker extends Thread {
         System.out.println("Puerto Paises: " + this.puertoPaises);
         paises = new HashMap<>();
         this.start();
+        iniciarPReg();
+        crearHiloEscucha();
+        balanceoCarga();
 
-//        balanceoCarga();
     }
 
     public static void main(String[] args) throws IOException {
@@ -72,9 +74,7 @@ public class Broker extends Thread {
 
     public void run() {
         iniciarOK();
-        iniciarPReg();
-        crearHiloEscucha();
-        balanceoCarga();
+        
     }
 
     private void iniciarPReg() {
@@ -103,7 +103,7 @@ public class Broker extends Thread {
                     siPaisesListos = true;
                     System.out.println("Todos los paises conectados ...");
                     System.out.println(b.paises.size());
-                    sumarPoblacionTotal();
+                    
                 } catch (IOException ex) {
                     Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
 
@@ -212,16 +212,23 @@ public class Broker extends Thread {
     }
 
     private void balanceoCarga() {
-
+        System.out.println("1");
         Thread hilo = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (!(siBrokersListos && siPaisesListos)) {
                     System.out.print("");
                 }
-
+                try {
+                    sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                sumarPoblacionTotal();
+                System.out.println("Salió" + "-" +cargaActual+ "-"+maximaCarga);
                 balanceoCompletado = false;
                 if (cargaActual > maximaCarga) {
+                    System.out.println("2");
                     ArrayList<ConnPais> aux = new ArrayList<>();
                     aux.addAll(paises.values());
                     Comparator<ConnPais> comparador = new Comparator<ConnPais>() {
@@ -245,6 +252,7 @@ public class Broker extends Thread {
     }
 
     public void protocoloBalanceo(Pais p) {
+        System.out.println("3");
         boolean bandera = false;
         Pais aux = null;
         for (String v : vecinosBrokers) {

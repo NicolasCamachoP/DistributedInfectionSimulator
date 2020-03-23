@@ -131,11 +131,11 @@ public class Pais extends Thread implements Serializable{
                     bandera = true;
                     System.out.println("Broker con IP: " + m.contenido + ", hizo agentConfirm");
                     s.close();
-                    return true;
                 }
                 in = new ObjectInputStream(s.getInputStream());
                 m = (Mensaje) in.readObject();
                 if (m.tipo == Tipo.ChangePais){
+                    System.out.println("Estado actualizado con "+ this.getNomPais());
                     Pais pn = (Pais)m.contenido;
                     actualizarEstado(pn);
                 }
