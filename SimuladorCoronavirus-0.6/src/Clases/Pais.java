@@ -130,7 +130,6 @@ public class Pais extends Thread implements Serializable{
                 {
                     bandera = true;
                     System.out.println("Broker con IP: " + m.contenido + ", hizo agentConfirm");
-                    s.close();
                 }
                 in = new ObjectInputStream(s.getInputStream());
                 m = (Mensaje) in.readObject();
@@ -141,6 +140,7 @@ public class Pais extends Thread implements Serializable{
                 }
 
             } catch (IOException e) {
+                Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, e);
                 System.out.println("Ip: " + ipBroker + " - Esperando ...");
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
