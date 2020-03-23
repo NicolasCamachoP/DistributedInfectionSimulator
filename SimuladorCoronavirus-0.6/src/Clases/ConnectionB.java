@@ -54,7 +54,7 @@ class ConnectionB extends Thread {
             else if(m.tipo == Tipo.BalanceRequest)                                          
             {
                 System.out.println("BalanceRequest recibido...");
-                while((!broker.siPaisesListos))
+                while((!broker.siPaisesListos) || broker.ocupado)
                 {
                     System.out.print("");
                 }
