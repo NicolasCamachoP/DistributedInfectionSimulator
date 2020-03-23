@@ -352,6 +352,7 @@ public class Broker extends Thread {
         
         try {
             ConnectionB_P connect = paises.get(pv.getNomPais()).connection;
+            System.out.println("Actualizano estado en " +pv.getNomPais() +" a "+pn.getNomPais());
             connect.actualizarEstado(pn);
             paises.remove(pv.getNomPais());
             paises.put(pn.getName(), new ConnPais(pn, connect));

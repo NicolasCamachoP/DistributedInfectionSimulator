@@ -53,7 +53,7 @@ class ConnectionB_P extends Thread {
                 System.out.println("Pais Registrado en broker local ");
                 while (true) {
                     //Cambio de estado
-                    if (siActualiza && paisCambio == null) {
+                    if (siActualiza && paisCambio != null) {
                         out.writeObject(new Mensaje(Tipo.ChangePais, paisCambio));
                         out.flush();
                         System.out.println("Cambio de estado realizado...");
@@ -82,6 +82,7 @@ class ConnectionB_P extends Thread {
 
     void actualizarEstado(Pais pn) {
         System.out.println("Atributos modificados por balanceo en ConnectionB_P...");
+        System.out.println("pn es "+ pn.getNomPais());
         paisCambio = pn;
         siActualiza = true;
     }
