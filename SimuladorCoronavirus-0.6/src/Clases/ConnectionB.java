@@ -58,7 +58,7 @@ class ConnectionB extends Thread {
                 {
                     System.out.print("");
                 }
-                System.out.println("Saliooo");
+                System.out.println("Salioooo");
                 broker.ocupado = true;
                 Pais p = broker.verificacionBalanceRequest((String)m.contenido);
                 m = new Mensaje(Tipo.BalanceReply, p);
