@@ -1,7 +1,7 @@
 nombre:
 Colombia
 poblacion:
-4000000
+1000000000
 porcentajeaislamiento:
 10
 porcentajepoblacioninfectada:

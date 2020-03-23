@@ -24,64 +24,66 @@ class ConnectionB_P extends Thread {
     ObjectOutputStream out;
     Socket clientSocket;
     Broker broker;
+    boolean siActualiza = false;
+    Pais paisCambio = null;
 
-    public ConnectionB_P(Socket aClientSocket, Broker b) 
-    {
-        try 
-        {
+    public ConnectionB_P(Socket aClientSocket, Broker b) {
+        try {
             broker = b;
             clientSocket = aClientSocket;
             in = new ObjectInputStream(clientSocket.getInputStream());
             out = new ObjectOutputStream(clientSocket.getOutputStream());
             this.start();
-        } 
-        catch (IOException e) 
-        {
+        } catch (IOException e) {
             System.out.println("Connection:" + e.getMessage());
         }
     } // end Connection
 
-    public void run() 
-    {
-        try 
-        {	       
+    public void run() {
+        try {
             Mensaje m = (Mensaje) in.readObject();
             sleep(100);
-            if(m.tipo == Tipo.agentRegistry)
-            {
-                Pais aux = (Pais)m.contenido;
-                broker.paises.add(aux);
+            if (m.tipo == Tipo.agentRegistry) {
+                Pais aux = (Pais) m.contenido;
+                broker.paises.put(aux.getNomPais(), new ConnPais(aux, this));
                 m = new Mensaje(Tipo.agentRConfirm, broker.ip);
                 out.writeObject(m);
                 out.flush();
                 broker.paisesConectados++;
                 System.out.println("Pais Registrado en broker local ");
+                while (true) {
+                    //Cambio de estado
+                    if (siActualiza && paisCambio == null) {
+                        out.writeObject(new Mensaje(Tipo.ChangePais, paisCambio));
+                        out.flush();
+                        System.out.println("Cambio de estado realizado...");
+                        siActualiza = false;
+                        paisCambio = null;
+                    }
+                }
+
             }
-        } 
-        catch (EOFException e) 
-        {
+        } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
-        } 
-        catch (IOException e) 
-        {
+        } catch (IOException e) {
             System.out.println("PBreadline:" + e.getMessage());
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ConnectionB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
             Logger.getLogger(ConnectionB.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        finally 
-        {
-            try 
-            {
+        } finally {
+            try {
                 clientSocket.close();
-            } 
-            catch (IOException e) 
-            {
+            } catch (IOException e) {
                 /*close failed*/
             }
         }
     } // end run
+
+    void actualizarEstado(Pais pn) {
+        paisCambio = pn;
+        siActualiza = true;
+    }
 
 } // end class Connection 
 

@@ -50,16 +50,24 @@ public class Pais extends Thread implements Serializable{
         leerArchivo(nFile);
         System.out.println("Vecinos terrestres: " + vecinosTerrestres.size());
         System.out.println("Vecinos aereos: " + vecinosAereos.size());
-        crearHiloEscuchaBrokers();
-//        crearHiloEscuchaPaises();
         this.start();
+        
+//        crearHiloEscuchaPaises();
+        
     }
 
-    private Pais(String name, long poblacion) {
-        this.nomPais = name;
-        this.poblacion = poblacion;
+    private Pais(Pais p) {
+        this.vecinosAereos = new ArrayList<>();
+        this.vecinosTerrestres = new ArrayList<>();
+        this.nomPais = p.getNomPais();
+        this.poblacion = p.getPoblacion();
+        this.porcentAislamiento = p.porcentAislamiento;
+        this.porcentPoblaVulne = p.porcentPoblaVulne;
+        this.porcentajePoblaInfec = p.porcentajePoblaInfec;
+        this.vecinosAereos.addAll(p.getVecinosAereos());
+        this.vecinosTerrestres.addAll(p.getVecinosTerrestres());
     }
-
+    /*
     private void crearHiloEscuchaPaises() {
         Pais p = this;
         Thread hiloEscucha = new Thread(new Runnable() {
@@ -102,16 +110,16 @@ public class Pais extends Thread implements Serializable{
         });
         hiloEscucha.start();
     }
-
-    private void iniciarAgentReg(){
-        Pais p = new Pais(this.getName(), this.getPoblacion());
+*/
+    private boolean iniciarAgentReg(){
+        Pais p = new Pais(this);
         boolean bandera = false;
         Socket s;
         System.out.println("Puerto pais - broker: " + puertoPais_Broker);
         while (bandera == false) 
         {
             try {
-                s = new Socket(ipBroker, puertoPais_Broker);
+                s = new Socket(ipBroker, 6666);//puertoPais_Broker);
                 out = new ObjectOutputStream(s.getOutputStream());
                 out.writeObject(new Mensaje(Tipo.agentRegistry, p));
 //                s.setSoTimeout(1000);
@@ -122,6 +130,14 @@ public class Pais extends Thread implements Serializable{
                 {
                     bandera = true;
                     System.out.println("Broker con IP: " + m.contenido + ", hizo agentConfirm");
+                    s.close();
+                    return true;
+                }
+                in = new ObjectInputStream(s.getInputStream());
+                m = (Mensaje) in.readObject();
+                if (m.tipo == Tipo.ChangePais){
+                    Pais pn = (Pais)m.contenido;
+                    actualizarEstado(pn);
                 }
 
             } catch (IOException e) {
@@ -133,11 +149,16 @@ public class Pais extends Thread implements Serializable{
 //                Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
 //            }
         }
+        return false;
 
     }
 
     public void run() {
+        /*if(iniciarAgentReg())
+            crearHiloEscuchaBrokers();*/
         iniciarAgentReg();
+        cargar();
+        cargar();
     }
 
     private void leerArchivo(String nFile) {
@@ -241,11 +262,27 @@ public class Pais extends Thread implements Serializable{
         long b = 1239852;
         long c = 0;
         // Call an expensive task, or sleep if you are monitoring a remote process
-        for (double i = 0; i < 10000000; i++) {
+        for (double i = 0; i < 2000000000; i++) {
+            /*try {
+                sleep(5000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
+            }*/
             c += a / b;
             c += c * b;
         }
 
+    }
+
+    private void actualizarEstado(Pais p) {
+        this.nomPais = p.getNomPais();
+        this.poblacion = p.getPoblacion();
+        this.porcentAislamiento = p.porcentAislamiento;
+        this.porcentPoblaVulne = p.porcentPoblaVulne;
+        this.porcentajePoblaInfec = p.porcentajePoblaInfec;
+        this.vecinosAereos.addAll(p.getVecinosAereos());
+        this.vecinosTerrestres.addAll(p.getVecinosTerrestres());
+        System.out.println("Estado actualizado con "+ this.getNomPais());
     }
 
 }//end Pais

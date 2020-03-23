@@ -7,9 +7,13 @@ package Clases;
 
 /**
  *
- * @author sistemas
+ * @author ncp43
  */
-public enum Tipo
-{
-    OkRequest, OkReply, BalanceRequest, BalanceReply, BalanceLoad, agentRegistry, agentRConfirm, QuestionPais, ConfirmPais, ChangePais, BalanceFinished, 
+class ConnPais {
+    public Pais pais;
+    public ConnectionB_P connection;
+    public ConnPais(Pais p , ConnectionB_P con){
+        this.pais = p;
+        this.connection = con;
+    }
 }

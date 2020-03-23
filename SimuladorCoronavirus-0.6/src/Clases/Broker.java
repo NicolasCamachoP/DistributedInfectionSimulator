@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +30,7 @@ public class Broker extends Thread {
     /**
      *
      */
-    public ArrayList<Pais> paises;
+    public HashMap<String, ConnPais> paises;
     public int puertoBrokers;
     public int puertoPaises;
     public long maximaCarga;
@@ -38,12 +39,9 @@ public class Broker extends Thread {
     public ServerSocket serverSP;
     public int paisesNecesarios;
     public int paisesConectados;
-
     public ObjectOutputStream out;
     public ObjectInputStream in;
-
     public String ip;
-    
     boolean siBrokersListos = false;
     boolean siPaisesListos = false;
     boolean balanceoCompletado = true;
@@ -62,12 +60,10 @@ public class Broker extends Thread {
         leerArchivo();
         System.out.println("Puerto Brokers: " + this.puertoBrokers);
         System.out.println("Puerto Paises: " + this.puertoPaises);
-        paises = new ArrayList<>();
-        crearHiloEscucha();
+        paises = new HashMap<>();
         this.start();
-        iniciarPReg();
-//        balanceoCarga();
 
+//        balanceoCarga();
     }
 
     public static void main(String[] args) throws IOException {
@@ -75,17 +71,21 @@ public class Broker extends Thread {
     }
 
     public void run() {
-        iniciarOK();        
+        iniciarOK();
+        iniciarPReg();
+        crearHiloEscucha();
+        balanceoCarga();
     }
 
     private void iniciarPReg() {
 
         Broker b = this;
+        System.out.println(this.paises.size());
         Thread hiloEscucha = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    serverSP = new ServerSocket(puertoPaises);
+                    serverSP = new ServerSocket(6666);//puertoPaises);
                     System.out.println("Broker Escuchando Paises ...");
                     int numPaises = 0;
                     while (numPaises < paisesNecesarios) {
@@ -102,6 +102,7 @@ public class Broker extends Thread {
                     }
                     siPaisesListos = true;
                     System.out.println("Todos los paises conectados ...");
+                    System.out.println(b.paises.size());
                     sumarPoblacionTotal();
                 } catch (IOException ex) {
                     Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
@@ -111,11 +112,10 @@ public class Broker extends Thread {
         });
         hiloEscucha.start();
     }
-    
-    public void sumarPoblacionTotal()
-    {
-        for (Pais p : paises) {
-            cargaActual += p.getPoblacion();
+
+    public void sumarPoblacionTotal() {
+        for (ConnPais value : paises.values()) {
+            this.cargaActual += value.pais.getPoblacion();
         }
     }
 
@@ -212,50 +212,45 @@ public class Broker extends Thread {
     }
 
     private void balanceoCarga() {
-        
+
         Thread hilo = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(!(siBrokersListos && siPaisesListos))
-                {
+                while (!(siBrokersListos && siPaisesListos)) {
                     System.out.print("");
                 }
 
                 balanceoCompletado = false;
-                if(cargaActual > maximaCarga)
-                {
-                    ArrayList<Pais> aux = new ArrayList<>();
-                    aux.addAll(paises);
-                    Comparator<Pais> comparador = new Comparator<Pais>() {
+                if (cargaActual > maximaCarga) {
+                    ArrayList<ConnPais> aux = new ArrayList<>();
+                    aux.addAll(paises.values());
+                    Comparator<ConnPais> comparador = new Comparator<ConnPais>() {
                         @Override
-                        public int compare(Pais t, Pais t1) {
-                            return (int)(t.getPoblacion() - t1.getPoblacion());
+                        public int compare(ConnPais t, ConnPais t1) {
+                            return (int) (t.pais.getPoblacion() - t1.pais.getPoblacion());
                         }
                     };
                     Collections.sort(aux, comparador);
 
-                    Pais pesado = aux.get(aux.size()-1);
+                    Pais pesado = aux.get(aux.size() - 1).pais;
 
                     protocoloBalanceo(pesado);
 
                 }
             }
         });
-        
+
         hilo.start();
 
     }
-    
-    public void protocoloBalanceo(Pais p)
-    {
+
+    public void protocoloBalanceo(Pais p) {
         boolean bandera = false;
         Pais aux = null;
         for (String v : vecinosBrokers) {
             bandera = false;
-            while (bandera == false) 
-            {
-                try 
-                {
+            while (bandera == false) {
+                try {
                     Socket s = new Socket(v, puertoBrokers);
                     out = new ObjectOutputStream(s.getOutputStream());
                     out.writeObject(new Mensaje(Tipo.BalanceRequest, p.getNomPais() + ";" + p.getPoblacion() + ";" + cargaActual + ";" + maximaCarga));
@@ -275,30 +270,26 @@ public class Broker extends Thread {
                     System.out.println(e.getMessage());
                 }
             }
-            
-            if(balanceoCompletado)
-            {
-                try 
-                {
+
+            if (balanceoCompletado) {
+                try {
                     Socket s = new Socket(v, puertoBrokers);
                     out = new ObjectOutputStream(s.getOutputStream());
                     Mensaje m = new Mensaje(Tipo.BalanceLoad, new DTOPaises(aux, p));
+                    intercambiar(p, aux);
                     out.writeObject(m);
                     break;
-                   
                 } catch (IOException e) {
                     System.out.println("readline:" + e.getMessage());
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }
-            
+
         }
-        
-        for (String v : vecinosBrokers) 
-        {
-            try 
-            {
+
+        for (String v : vecinosBrokers) {
+            try {
                 Socket s = new Socket(v, puertoBrokers);
                 out = new ObjectOutputStream(s.getOutputStream());
                 Mensaje m = new Mensaje(Tipo.BalanceFinished, null);
@@ -310,81 +301,52 @@ public class Broker extends Thread {
                 System.out.println(e.getMessage());
             }
         }
-        
-        
+
     }
-    
-    public Pais verificacionBalanceRequest(String cadena)
-    {
-       
+
+    public Pais verificacionBalanceRequest(String cadena) {
+
         String[] split = cadena.split(";");
         String nomPais = split[0];
         Long poblacionPais = Long.parseLong(split[1]);
         Long cargaActualSol = Long.parseLong(split[2]);
         Long maximaCargaSol = Long.parseLong(split[3]);
-        
-        ArrayList<Pais> aux = new ArrayList<>();
-        aux.addAll(paises);
-        Comparator<Pais> comparador = new Comparator<Pais>() {
+        ArrayList<ConnPais> aux = new ArrayList<>();
+        aux.addAll(paises.values());
+        Comparator<ConnPais> comparador = new Comparator<ConnPais>() {
             @Override
-            public int compare(Pais t, Pais t1) {
-                return (int)(t.getPoblacion() - t1.getPoblacion());
+            public int compare(ConnPais t, ConnPais t1) {
+                return (int) (t.pais.getPoblacion() - t1.pais.getPoblacion());
             }
         };
         Collections.sort(aux, comparador);
-            
-        Pais liviano = aux.get(0);
+        Pais liviano = aux.get(0).pais;
         Long min = liviano.getPoblacion();
-        
-        if((cargaActual-min+poblacionPais) > maximaCarga)
-        {
+
+        if ((cargaActual - min + poblacionPais) > maximaCarga) {
             return null;
-        }
-        else
-        {
-            if((cargaActualSol-poblacionPais+min) > maximaCargaSol) 
+        } else {
+            if ((cargaActualSol - poblacionPais + min) > maximaCargaSol) {
                 return null;
-            else
+            } else {
                 return liviano;
-        }   
-    }
-    
-    public void intercambiar(Pais pv, Pais pn)
-    {
-        for (Pais p : paises) 
-        {
-            if(p.getNomPais().equals(pv.getNomPais()))
-            {
-                p = pn;
-                break;
             }
         }
-        
+    }
+
+    public void intercambiar(Pais pv, Pais pn) {
+
         //Conexion País 
-        try 
-        {
-            Socket s = new Socket("localhost", puertoPaises);
-            out = new ObjectOutputStream(s.getOutputStream());
-            out.writeObject(new Mensaje(Tipo.QuestionPais, pv.getNomPais()));
-            in = new ObjectInputStream(s.getInputStream());
-            Mensaje m = (Mensaje) in.readObject();
-            
-            if(m.tipo == Tipo.ConfirmPais)
-            {
-                m = new Mensaje(Tipo.ChangePais, pn);
-                out.writeObject(m);
-            }
-            
-        } catch (IOException e) {
-            System.out.println("readline:" + e.getMessage());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
+        
+        try {
+            ConnectionB_P connect = paises.get(pv.getNomPais()).connection;
+            connect.actualizarEstado(pn);
+            paises.remove(pv.getNomPais());
+            paises.put(pn.getName(), new ConnPais(pn, connect));
+        
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
-    
-    
-    
 
 }//end Broker

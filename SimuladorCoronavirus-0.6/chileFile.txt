@@ -1,7 +1,7 @@
 nombre:
 Chile
 poblacion:
-8000000
+1000000001
 porcentajeaislamiento:
 10
 porcentajepoblacioninfectada:
