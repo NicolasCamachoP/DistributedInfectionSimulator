@@ -63,6 +63,7 @@ class ConnectionB extends Thread {
                 Pais p = broker.verificacionBalanceRequest((String)m.contenido);
                 m = new Mensaje(Tipo.BalanceReply, p);
                 out.writeObject(m);
+                System.out.println("País enviado para balanceo...");
                 
             }
             else if (m.tipo == Tipo.BalanceLoad)

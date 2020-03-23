@@ -265,6 +265,7 @@ public class Broker extends Thread {
                     in = new ObjectInputStream(s.getInputStream());
                     Mensaje m = (Mensaje) in.readObject();
                     bandera = true;
+                    System.out.println("Recibí país liviano...");
                     if (m.tipo == Tipo.BalanceReply && m.contenido != null) {
                         balanceoCompletado = true;
                         aux = (Pais) m.contenido;
@@ -281,11 +282,13 @@ public class Broker extends Thread {
 
             if (balanceoCompletado) {
                 try {
+                    System.out.println("Voy a actualizar estados...");
                     Socket s = new Socket(v, puertoBrokers);
                     out = new ObjectOutputStream(s.getOutputStream());
                     Mensaje m = new Mensaje(Tipo.BalanceLoad, new DTOPaises(aux, p));
                     intercambiar(p, aux);
                     out.writeObject(m);
+                    System.out.println("Protocolo balanceo en broker completado...");
                     break;
                 } catch (IOException e) {
                     System.out.println("readline:" + e.getMessage());
@@ -346,14 +349,13 @@ public class Broker extends Thread {
     }
 
     public void intercambiar(Pais pv, Pais pn) {
-
-        //Conexion País 
         
         try {
             ConnectionB_P connect = paises.get(pv.getNomPais()).connection;
             connect.actualizarEstado(pn);
             paises.remove(pv.getNomPais());
             paises.put(pn.getName(), new ConnPais(pn, connect));
+            System.out.println("Mapa con estado acutualizado...");
         
         } catch (Exception e) {
             System.out.println(e.getMessage());

@@ -81,6 +81,7 @@ class ConnectionB_P extends Thread {
     } // end run
 
     void actualizarEstado(Pais pn) {
+        System.out.println("Atributos modificados por balanceo en ConnectionB_P...");
         paisCambio = pn;
         siActualiza = true;
     }
