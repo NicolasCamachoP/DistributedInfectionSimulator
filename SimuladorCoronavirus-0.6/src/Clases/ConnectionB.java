@@ -54,10 +54,11 @@ class ConnectionB extends Thread {
             else if(m.tipo == Tipo.BalanceRequest)                                          
             {
                 System.out.println("BalanceRequest recibido...");
-                while((!broker.siPaisesListos) || broker.ocupado)                   //Cola de llegada???
+                while((!broker.siPaisesListos))
                 {
                     System.out.print("");
                 }
+                System.out.println("Saliooo");
                 broker.ocupado = true;
                 Pais p = broker.verificacionBalanceRequest((String)m.contenido);
                 m = new Mensaje(Tipo.BalanceReply, p);
