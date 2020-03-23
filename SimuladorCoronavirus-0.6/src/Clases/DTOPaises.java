@@ -5,11 +5,13 @@
  */
 package Clases;
 
+import java.io.Serializable;
+
 /**
  *
  * @author prado
  */
-public class DTOPaises {
+public class DTOPaises implements Serializable{
     
     public Pais pViejo;
     public Pais pNuevo;
