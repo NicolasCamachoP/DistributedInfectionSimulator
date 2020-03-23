@@ -119,7 +119,7 @@ public class Pais extends Thread implements Serializable{
         while (bandera == false) 
         {
             try {
-                s = new Socket(ipBroker, 6666);//puertoPais_Broker);
+                s = new Socket(ipBroker,puertoPais_Broker);
                 out = new ObjectOutputStream(s.getOutputStream());
                 out.writeObject(new Mensaje(Tipo.agentRegistry, p));
 //                s.setSoTimeout(1000);
@@ -131,6 +131,7 @@ public class Pais extends Thread implements Serializable{
                     bandera = true;
                     System.out.println("Broker con IP: " + m.contenido + ", hizo agentConfirm");
                 }
+                System.out.println("Esperando siguiente mensaje");
                 in = new ObjectInputStream(s.getInputStream());
                 m = (Mensaje) in.readObject();
                 if (m.tipo == Tipo.ChangePais){
