@@ -332,11 +332,14 @@ public class Broker extends Thread {
         Long min = liviano.getPoblacion();
 
         if ((cargaActual - min + poblacionPais) > maximaCarga) {
+            System.out.println("No puedo aceptar el balanceo...");
             return null;
         } else {
             if ((cargaActualSol - poblacionPais + min) > maximaCargaSol) {
+                System.out.println("El puedo aceptar el balanceo...");
                 return null;
             } else {
+                System.out.println("Si puedo aceptar el balanceo...");
                 return liviano;
             }
         }
