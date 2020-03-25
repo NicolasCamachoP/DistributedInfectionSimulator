@@ -53,6 +53,7 @@ class ConnectionB_P extends Thread {
                 System.out.println("Pais Registrado en broker local ");
                 while (true) {
                     //Cambio de estado
+                    System.out.print("");
                     if (siActualiza && paisCambio != null) {
                         out.writeObject(new Mensaje(Tipo.ChangePais, paisCambio));
                         out.flush();
