@@ -47,9 +47,18 @@ class ConnectionP extends Thread {
         {	       
             Mensaje m = (Mensaje) in.readObject();
             sleep(100);
-            if(m.tipo == Tipo.agentRConfirm)
+            if(m.tipo == Tipo.OkRequestPais)
             {
-                System.out.println("Pais registrado en broker con ip: " + m.getClass());
+                Pais auxP = new Pais();
+                auxP.setNomPais(pais.getNomPais());
+                auxP.setPoblacion(pais.getPoblacion());
+                auxP.setPorcentAislamiento(pais.getPorcentAislamiento());
+                auxP.setPorcentPoblaVulne(pais.getPorcentPoblaVulne());
+                auxP.setPorcentajePoblaInfec(pais.getPorcentajePoblaInfec());
+                System.out.println("Solicitud recibida ConnectionP " + m.tipo+ " en: "+pais.getNomPais());
+                m=new Mensaje(Tipo.OkreplyPais, auxP);
+                out.writeObject(m);
+                System.out.println("Mensaje replay enviado desde "+pais.getNomPais());
             }
         } 
         catch (EOFException e) 
@@ -58,11 +67,12 @@ class ConnectionP extends Thread {
         } 
         catch (IOException e) 
         {
-            System.out.println("readline:" + e.getMessage());
+            System.out.println("readline en ConnectionP de "+pais.getNomPais()+" readline:" + e.getMessage());
+            Logger.getLogger(ConnectionP.class.getName()).log(Level.SEVERE, null, e);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ConnectionB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConnectionP.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
-            Logger.getLogger(ConnectionB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ConnectionP.class.getName()).log(Level.SEVERE, null, ex);
         }
         finally 
         {

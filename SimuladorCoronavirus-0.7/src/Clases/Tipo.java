@@ -9,7 +9,19 @@ package Clases;
  *
  * @author sistemas
  */
-public enum Tipo
+public enum Tipo 
 {
-    OkRequest, OkReply, BalanceRequest, BalanceReply, BalanceLoad, agentRegistry, agentRConfirm, QuestionPais, ConfirmPais, ChangePais, BalanceFinished, 
+    OkRequest, 
+    OkReply, 
+    BalanceRequest, 
+    BalanceReply, 
+    BalanceLoad, 
+    agentRegistry,
+    agentRConfirm, 
+    QuestionPais, 
+    ConfirmPais, 
+    ChangePais, 
+    BalanceFinished,
+    OkRequestPais,
+    OkreplyPais
 }

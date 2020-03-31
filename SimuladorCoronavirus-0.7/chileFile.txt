@@ -15,4 +15,4 @@ puertopaises:
 vecinosaereo:
 Colombia;192.168.0.6;7895
 vecinosterrestres:
-Venezuela;192.168.0.9;7894
+Venezuela;192.168.0.6;7894

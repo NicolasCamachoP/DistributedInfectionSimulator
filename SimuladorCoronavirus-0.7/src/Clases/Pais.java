@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
  * @version 1.0
  * @created 07-mar.-2020 9:30:50
  */
-public class Pais extends Thread implements Serializable{
+public class Pais extends Thread implements Serializable {
 
     private String nomPais;
     private long poblacion;
@@ -28,12 +29,12 @@ public class Pais extends Thread implements Serializable{
     public ArrayList<Pais> vecinosAereos;
     public ArrayList<Pais> vecinosTerrestres;
     public HashMap<String, Integer> puertosVecinos;
-    public HashMap<String,String> ipVecinos;
+    public HashMap<String, String> ipVecinos;
     private int puertoPais_Broker;
     private int puertoPaises;
     private ServerSocket serverS;
     private ServerSocket serverSB;
-    private String ipBroker = "localhost";  
+    private String ipBroker = "localhost";
     public ObjectOutputStream out;
     public ObjectInputStream in;
 
@@ -63,8 +64,9 @@ public class Pais extends Thread implements Serializable{
     }
 
     Pais() {
-        
+
     }
+
     /*
     private boolean iniciarAgentReg(){
         Pais p = new Pais(this);
@@ -103,14 +105,20 @@ public class Pais extends Thread implements Serializable{
         return false;
 
     }*/
-
     public void run() {
         //iniciarAgentReg();
-        System.out.println("El país "+ nomPais + " esta corriendo...");
+        System.out.println("El país " + nomPais + " va a contactarse con sus vecinos...");
         System.out.println("Vecinos terrestres: " + vecinosTerrestres.size());
         System.out.println("Vecinos aereos: " + vecinosAereos.size());
-        cargar();
-        cargar();
+        crearHiloEscucha();
+        if (vecinosOk()) {
+            System.out.println("El país " + nomPais + " esta corriendo...");
+            cargar();
+            cargar();
+        } else {
+            System.out.println("PaisOk fallido en " + this.nomPais);
+        }
+
     }
 
     private void leerArchivo(String nFile) {
@@ -137,18 +145,18 @@ public class Pais extends Thread implements Serializable{
                     while (!line.equals("vecinosterrestres:")) {
                         String[] split = line.split(";");
                         vecinosAereos.add(new Pais());
-                        vecinosAereos.get(vecinosAereos.size()-1).setNomPais(split[0]);
+                        vecinosAereos.get(vecinosAereos.size() - 1).setNomPais(split[0]);
                         ipVecinos.put(split[0], split[1]);
-                        puertosVecinos.put(split[0],Integer.valueOf(split[2]));
+                        puertosVecinos.put(split[0], Integer.valueOf(split[2]));
                         line = input.nextLine();
                     }
                     while (input.hasNextLine()) {
                         line = input.nextLine();
                         String[] split = line.split(";");
                         vecinosTerrestres.add(new Pais());
-                        vecinosTerrestres.get(vecinosTerrestres.size()-1).setNomPais(split[0]);
+                        vecinosTerrestres.get(vecinosTerrestres.size() - 1).setNomPais(split[0]);
                         ipVecinos.put(split[0], split[1]);
-                        puertosVecinos.put(split[0],Integer.valueOf(split[2]));
+                        puertosVecinos.put(split[0], Integer.valueOf(split[2]));
                     }
                 }
             }
@@ -225,7 +233,7 @@ public class Pais extends Thread implements Serializable{
         long c = 0;
         // Call an expensive task, or sleep if you are monitoring a remote process
         for (double i = 0; i < 2000000000; i++) {
-           
+
             c += a / b;
             c += c * b;
         }
@@ -240,7 +248,110 @@ public class Pais extends Thread implements Serializable{
         this.porcentajePoblaInfec = p.porcentajePoblaInfec;
         this.vecinosAereos.addAll(p.getVecinosAereos());
         this.vecinosTerrestres.addAll(p.getVecinosTerrestres());
-        System.out.println("Estado actualizado con "+ this.getNomPais());
+        System.out.println("Estado actualizado con " + this.getNomPais());
+    }
+
+    private boolean vecinosOk() {
+        boolean vecinosAListos = false;
+        boolean vecinosTListos = false;
+        Pais auxVec;
+        if (vecinosAereos.size() > 0) {
+            for (Pais vecino : vecinosAereos) {
+                vecinosAListos = false;
+                while (!vecinosAListos) {
+                    try {
+                        Socket s = new Socket(ipVecinos.get(vecino.getNomPais()), puertosVecinos.get(vecino.getNomPais()));
+                        out = new ObjectOutputStream(s.getOutputStream());
+                        out.writeObject(new Mensaje(Tipo.OkRequestPais, null));
+                        in = new ObjectInputStream(s.getInputStream());
+                        Mensaje m = (Mensaje) in.readObject();
+                        if (m.tipo == Tipo.OkreplyPais) {
+                            vecinosAListos = true;
+                            auxVec = (Pais) m.contenido;
+                            System.out.println("El vecino terrestre: " + auxVec.getNomPais() + " - Registrado en " + nomPais);
+                            vecino.setPoblacion(auxVec.poblacion);
+                            vecino.setPorcentAislamiento(auxVec.porcentAislamiento);
+                            vecino.setPorcentPoblaVulne(auxVec.porcentPoblaVulne);
+                            vecino.setPorcentajePoblaInfec(auxVec.porcentajePoblaInfec);
+                        }
+                    } catch (IOException e) {
+                        System.out.println("Vecino terrestre: " + vecino.nomPais + " - Esperando desde " + this.nomPais);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            }
+        } else {
+            vecinosAListos = true;
+        }
+        if (vecinosTerrestres.size() > 0) {
+            for (Pais vecino : vecinosTerrestres) {
+                vecinosTListos = false;
+                while (!vecinosTListos) {
+                    try {
+                        Socket s = new Socket(ipVecinos.get(vecino.getNomPais()), puertosVecinos.get(vecino.getNomPais()));
+                        out = new ObjectOutputStream(s.getOutputStream());
+                        out.writeObject(new Mensaje(Tipo.OkRequestPais, null));
+                        in = new ObjectInputStream(s.getInputStream());
+                        Mensaje m = (Mensaje) in.readObject();
+                        if (m.tipo == Tipo.OkreplyPais) {
+                            vecinosTListos = true;
+                            auxVec = (Pais) m.contenido;
+                            System.out.println("El vecino terrestre: " + auxVec.getNomPais() + " - Registrado en " + nomPais);
+                            vecino.setPoblacion(auxVec.poblacion);
+                            vecino.setPorcentAislamiento(auxVec.porcentAislamiento);
+                            vecino.setPorcentPoblaVulne(auxVec.porcentPoblaVulne);
+                            vecino.setPorcentajePoblaInfec(auxVec.porcentajePoblaInfec);
+                        }
+                    } catch (IOException e) {
+                        System.out.println("Vecino terrestre: " + vecino.nomPais + " - Esperando ...");
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            }
+        } else
+            vecinosTListos = true;
+
+        if (vecinosAListos && vecinosTListos) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean crearHiloEscucha() {
+        Pais p = this;
+        Thread hiloEscucha = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverS = new ServerSocket(puertoPaises);
+                    System.out.println("Pais " + p.getNomPais() + " esuchando - CrearHiloEscucha");
+
+                    while (true) {
+                        try {
+                            Socket clientSocket = serverS.accept();
+                            System.out.println("Solicitud recibida - en Pais: " + p.getNomPais());
+                            ConnectionP conP = new ConnectionP(clientSocket, p);
+                        } catch (SocketTimeoutException e) {
+                            System.out.println("Esuchando solicitudes");
+                        }
+
+                    }
+
+                } catch (IOException ex) {
+                    Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
+
+                }
+            }
+        });
+        hiloEscucha.start();
+        return true;
     }
 
 }//end Pais
+

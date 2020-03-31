@@ -13,6 +13,6 @@ puertopaisBroker:
 puertopaises:
 7895
 vecinosaereo:
-Chile;192.168.0.9;7896
+Chile;192.168.0.6;7896
 vecinosterrestres:
-Venezuela;192.168.0.9;7894
+Venezuela;192.168.0.6;7894

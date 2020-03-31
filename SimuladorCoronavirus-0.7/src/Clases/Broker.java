@@ -71,8 +71,8 @@ public class Broker extends Thread {
         //iniciarPReg();
         crearHiloEscucha();
         //balanceoCarga();
-        System.out.println("Puerto Brokers: " + this.puertoBrokers);
-        System.out.println("Puerto Paises: " + this.puertoPaises);
+        //System.out.println("Puerto Brokers: " + this.puertoBrokers);
+        //System.out.println("Puerto Paises: " + this.puertoPaises);
     }
 
     public static void main(String[] args) throws IOException {

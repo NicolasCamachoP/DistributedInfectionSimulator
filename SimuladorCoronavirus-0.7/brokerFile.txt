@@ -8,3 +8,4 @@ vecinosB:
 paises:
 colombiaFile.txt
 venezuelaFile.txt
+chileFile.txt
