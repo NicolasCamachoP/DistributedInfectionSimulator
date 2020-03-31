@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -24,8 +25,10 @@ public class Pais extends Thread implements Serializable{
     private float porcentAislamiento;
     private float porcentajePoblaInfec;
     private float porcentPoblaVulne;
-    private List<String> vecinosAereos;
-    private List<String> vecinosTerrestres;
+    public ArrayList<Pais> vecinosAereos;
+    public ArrayList<Pais> vecinosTerrestres;
+    public HashMap<String, Integer> puertosVecinos;
+    public HashMap<String,String> ipVecinos;
     private int puertoPais_Broker;
     private int puertoPaises;
     private ServerSocket serverS;
@@ -34,31 +37,20 @@ public class Pais extends Thread implements Serializable{
     public ObjectOutputStream out;
     public ObjectInputStream in;
 
-    public static void main(String[] args) throws IOException {
-        String nFile = new String();
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Ingrese el nombre del archivo para inicializar el país junto con la extension");
-        nFile = scan.nextLine();
-        System.out.println("Nombre " + nFile);
-        Pais me = new Pais(nFile);
-
-    }
-
     public Pais(String nFile) {
         vecinosAereos = new ArrayList();
         vecinosTerrestres = new ArrayList();
+        puertosVecinos = new HashMap<>();
+        ipVecinos = new HashMap<>();
         leerArchivo(nFile);
-        System.out.println("Vecinos terrestres: " + vecinosTerrestres.size());
-        System.out.println("Vecinos aereos: " + vecinosAereos.size());
         this.start();
-        
-//        crearHiloEscuchaPaises();
-        
     }
 
     private Pais(Pais p) {
-        this.vecinosAereos = new ArrayList<>();
-        this.vecinosTerrestres = new ArrayList<>();
+        this.vecinosAereos = new ArrayList();
+        this.vecinosTerrestres = new ArrayList();
+        this.puertosVecinos = new HashMap<>();
+        this.ipVecinos = new HashMap<>();
         this.nomPais = p.getNomPais();
         this.poblacion = p.getPoblacion();
         this.porcentAislamiento = p.porcentAislamiento;
@@ -66,51 +58,14 @@ public class Pais extends Thread implements Serializable{
         this.porcentajePoblaInfec = p.porcentajePoblaInfec;
         this.vecinosAereos.addAll(p.getVecinosAereos());
         this.vecinosTerrestres.addAll(p.getVecinosTerrestres());
+        this.ipVecinos.putAll(p.ipVecinos);
+        this.puertosVecinos.putAll(p.puertosVecinos);
+    }
+
+    Pais() {
+        
     }
     /*
-    private void crearHiloEscuchaPaises() {
-        Pais p = this;
-        Thread hiloEscucha = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    serverS = new ServerSocket(puertoPaises);
-                    System.out.println("Pais escuchando a los demas paises ...");
-
-                    while (true) {
-                        Socket clientSocket = serverS.accept();
-                        ConnectionP c = new ConnectionP(clientSocket, p);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        hiloEscucha.start();
-    }
-    
-    private void crearHiloEscuchaBrokers() 
-    {
-        Pais p = this;
-        Thread hiloEscucha = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    serverSB = new ServerSocket(puertoPais_Broker);
-                    System.out.println("Pais escuchando a los demas paises ...");
-                    
-                    while (true) {
-                        Socket clientSocket = serverSB.accept();
-                        ConnectionP_B c = new ConnectionP_B(clientSocket, p);
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        hiloEscucha.start();
-    }
-*/
     private boolean iniciarAgentReg(){
         Pais p = new Pais(this);
         boolean bandera = false;
@@ -122,10 +77,8 @@ public class Pais extends Thread implements Serializable{
                 s = new Socket(ipBroker,puertoPais_Broker);
                 out = new ObjectOutputStream(s.getOutputStream());
                 out.writeObject(new Mensaje(Tipo.agentRegistry, p));
-//                s.setSoTimeout(1000);
                 in = new ObjectInputStream(s.getInputStream());
                 Mensaje m = (Mensaje) in.readObject();
-//                sleep(100);
                 if (m.tipo == Tipo.agentRConfirm)
                 {
                     bandera = true;
@@ -146,18 +99,16 @@ public class Pais extends Thread implements Serializable{
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
             } 
-//            catch (InterruptedException ex) {
-//                Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
-//            }
         }
         return false;
 
-    }
+    }*/
 
     public void run() {
-        /*if(iniciarAgentReg())
-            crearHiloEscuchaBrokers();*/
-        iniciarAgentReg();
+        //iniciarAgentReg();
+        System.out.println("El país "+ nomPais + " esta corriendo...");
+        System.out.println("Vecinos terrestres: " + vecinosTerrestres.size());
+        System.out.println("Vecinos aereos: " + vecinosAereos.size());
         cargar();
         cargar();
     }
@@ -184,14 +135,20 @@ public class Pais extends Thread implements Serializable{
                 } else if (line.equals("vecinosaereo:")) {
                     line = input.nextLine();
                     while (!line.equals("vecinosterrestres:")) {
-                        //System.out.println(line);
-                        vecinosAereos.add(line);
+                        String[] split = line.split(";");
+                        vecinosAereos.add(new Pais());
+                        vecinosAereos.get(vecinosAereos.size()-1).setNomPais(split[0]);
+                        ipVecinos.put(split[0], split[1]);
+                        puertosVecinos.put(split[0],Integer.valueOf(split[2]));
                         line = input.nextLine();
                     }
                     while (input.hasNextLine()) {
                         line = input.nextLine();
-                        //System.out.println(line);
-                        vecinosTerrestres.add(line);
+                        String[] split = line.split(";");
+                        vecinosTerrestres.add(new Pais());
+                        vecinosTerrestres.get(vecinosTerrestres.size()-1).setNomPais(split[0]);
+                        ipVecinos.put(split[0], split[1]);
+                        puertosVecinos.put(split[0],Integer.valueOf(split[2]));
                     }
                 }
             }
@@ -221,6 +178,10 @@ public class Pais extends Thread implements Serializable{
         return porcentAislamiento;
     }
 
+    public int getPuertoPaises() {
+        return puertoPaises;
+    }
+
     public void setPorcentAislamiento(float PorcentAislamiento) {
         this.porcentAislamiento = PorcentAislamiento;
     }
@@ -241,19 +202,19 @@ public class Pais extends Thread implements Serializable{
         this.porcentPoblaVulne = PorcentPoblaVulne;
     }
 
-    public List<String> getVecinosAereos() {
+    public ArrayList<Pais> getVecinosAereos() {
         return vecinosAereos;
     }
 
-    public void setVecinosAereos(List<String> VecinosAereos) {
+    public void setVecinosAereos(ArrayList<Pais> VecinosAereos) {
         this.vecinosAereos.addAll(VecinosAereos);
     }
 
-    public List<String> getVecinosTerrestres() {
+    public ArrayList<Pais> getVecinosTerrestres() {
         return vecinosTerrestres;
     }
 
-    public void setVecinosTerrestres(List<String> VecinosTerrestres) {
+    public void setVecinosTerrestres(ArrayList<Pais> VecinosTerrestres) {
         this.vecinosTerrestres.addAll(VecinosTerrestres);
     }
 
@@ -264,11 +225,7 @@ public class Pais extends Thread implements Serializable{
         long c = 0;
         // Call an expensive task, or sleep if you are monitoring a remote process
         for (double i = 0; i < 2000000000; i++) {
-            /*try {
-                sleep(5000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Pais.class.getName()).log(Level.SEVERE, null, ex);
-            }*/
+           
             c += a / b;
             c += c * b;
         }

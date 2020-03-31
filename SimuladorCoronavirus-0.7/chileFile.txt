@@ -1,7 +1,7 @@
 nombre:
 Chile
 poblacion:
-1000000001
+10000
 porcentajeaislamiento:
 10
 porcentajepoblacioninfectada:
@@ -11,8 +11,8 @@ porcentajepoblacionvulnerable:
 puertopaisBroker:
 7989
 puertopaises:
-6798
+7896
 vecinosaereo:
-Colombia
+Colombia;192.168.0.6;7895
 vecinosterrestres:
-Venezuela
+Venezuela;192.168.0.9;7894

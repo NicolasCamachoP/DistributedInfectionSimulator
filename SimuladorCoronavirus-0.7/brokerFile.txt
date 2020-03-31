@@ -5,6 +5,6 @@ puertoB:
 puertoP:
 7989
 vecinosB:
-192.168.0.5
 paises:
-2
+colombiaFile.txt
+venezuelaFile.txt

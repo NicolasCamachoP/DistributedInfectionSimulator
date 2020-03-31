@@ -1,7 +1,7 @@
 nombre:
 Venezuela
 poblacion:
-2000000
+200
 porcentajeaislamiento:
 10
 porcentajepoblacioninfectada:
@@ -11,8 +11,8 @@ porcentajepoblacionvulnerable:
 puertopaisBroker:
 7989
 puertopaises:
-6798
+7894
 vecinosaereo:
 vecinosterrestres:
-Colombia
-Chile
+Colombia;192.168.0.6;7895
+Chile;192.168.0.6;7896

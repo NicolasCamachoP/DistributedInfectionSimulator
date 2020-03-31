@@ -31,6 +31,9 @@ public class Broker extends Thread {
      *
      */
     public HashMap<String, ConnPais> paises;
+    public ArrayList<String> archivosPaises;
+    public ArrayList<Integer> puertosPaises;
+    public ArrayList<Pais> paisesRegistrados;
     public int puertoBrokers;
     public int puertoPaises;
     public long maximaCarga;
@@ -48,7 +51,10 @@ public class Broker extends Thread {
     boolean ocupado = false;
 
     public Broker() {
-
+        paises = new HashMap<>();
+        archivosPaises = new ArrayList<>();
+        puertosPaises = new ArrayList<>();
+        paisesRegistrados = new ArrayList<>();
         try {
             ip = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException ex) {
@@ -57,15 +63,16 @@ public class Broker extends Thread {
         cargaActual = 0;
         vecinosBrokers = new ArrayList<>();
         paisesConectados = 0;
+        
+        
+        
         leerArchivo();
+        this.start();
+        //iniciarPReg();
+        crearHiloEscucha();
+        //balanceoCarga();
         System.out.println("Puerto Brokers: " + this.puertoBrokers);
         System.out.println("Puerto Paises: " + this.puertoPaises);
-        paises = new HashMap<>();
-        this.start();
-        iniciarPReg();
-        crearHiloEscucha();
-        balanceoCarga();
-
     }
 
     public static void main(String[] args) throws IOException {
@@ -73,12 +80,13 @@ public class Broker extends Thread {
     }
 
     public void run() {
-        iniciarOK();
-        
+        if(iniciarOK()){
+            inicializarPaises();
+        }
+
     }
-
+    /*
     private void iniciarPReg() {
-
         Broker b = this;
         System.out.println(this.paises.size());
         Thread hiloEscucha = new Thread(new Runnable() {
@@ -103,7 +111,7 @@ public class Broker extends Thread {
                     siPaisesListos = true;
                     System.out.println("Todos los paises conectados ...");
                     System.out.println(b.paises.size());
-                    
+
                 } catch (IOException ex) {
                     Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
 
@@ -111,7 +119,7 @@ public class Broker extends Thread {
             }
         });
         hiloEscucha.start();
-    }
+    }*/
 
     public void sumarPoblacionTotal() {
         for (ConnPais value : paises.values()) {
@@ -199,10 +207,11 @@ public class Broker extends Thread {
                         line = input.nextLine();
                     }
                     if (line.equals("paises:")) {
-                        line = input.nextLine();
-                        paisesNecesarios = Integer.parseInt(line);
+                        while (input.hasNext()) {
+                            line = input.nextLine();
+                            archivosPaises.add(line);
+                        }
                     }
-
                 }
             }
             input.close();
@@ -225,7 +234,7 @@ public class Broker extends Thread {
                     Logger.getLogger(Broker.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 sumarPoblacionTotal();
-                System.out.println("Salió" + "-" +cargaActual+ "-"+maximaCarga);
+                System.out.println("Salió" + "-" + cargaActual + "-" + maximaCarga);
                 balanceoCompletado = false;
                 if (cargaActual > maximaCarga) {
                     System.out.println("2");
@@ -349,17 +358,26 @@ public class Broker extends Thread {
     }
 
     public void intercambiar(Pais pv, Pais pn) {
-        
+
         try {
             ConnectionB_P connect = paises.get(pv.getNomPais()).connection;
-            System.out.println("Actualizano estado en " +pv.getNomPais() +" a "+pn.getNomPais());
+            System.out.println("Actualizano estado en " + pv.getNomPais() + " a " + pn.getNomPais());
             connect.actualizarEstado(pn);
             paises.remove(pv.getNomPais());
             paises.put(pn.getName(), new ConnPais(pn, connect));
             System.out.println("Mapa con estado acutualizado...");
-        
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    private void inicializarPaises() {
+        Pais auxP;
+        for (String nomArchivo : archivosPaises) {
+            auxP = new Pais(nomArchivo);
+            paisesRegistrados.add(auxP);
+            puertosPaises.add(auxP.getPuertoPaises());
         }
     }
 

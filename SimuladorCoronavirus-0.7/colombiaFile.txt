@@ -1,7 +1,7 @@
 nombre:
 Colombia
 poblacion:
-1000000000
+10000
 porcentajeaislamiento:
 10
 porcentajepoblacioninfectada:
@@ -11,8 +11,8 @@ porcentajepoblacionvulnerable:
 puertopaisBroker:
 7989
 puertopaises:
-6798
+7895
 vecinosaereo:
-Chile
+Chile;192.168.0.9;7896
 vecinosterrestres:
-Venezuela
+Venezuela;192.168.0.9;7894
