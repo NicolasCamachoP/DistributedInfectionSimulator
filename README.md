@@ -4,7 +4,7 @@ Allows contagion distribued simulation using threads, object streaming and serve
 ## Usage 
 
 * Clone the repository `git clone https://github.com/NicolasCamachoP/DistributedInfectionSimulator.git`
-* Import the project to NetBeands IDE and rune it.
+* Import the project to NetBeands IDE and run it.
 
 The Configuration files are used to define the countries that are going to be simulated and the brokers parameters.
 
