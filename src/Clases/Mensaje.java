@@ -10,7 +10,9 @@ import java.io.Serializable;
 /**
  *
  * @author sistemas
+ * 
  */
+//Todos los mensajes contienen un enumerado con el tipo de mensaje y un objeto que puede variar según sea su tipo
 public class Mensaje implements Serializable
 {
 

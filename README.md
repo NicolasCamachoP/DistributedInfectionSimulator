@@ -12,6 +12,7 @@ The Configuration files are used to define the countries that are going to be si
 
 * Sebastian Prado
 * [Nicolás Camacho](https://github.com/NicolasCamachoP)
+* Emanuel Alvarez
 
 ## License 
 
